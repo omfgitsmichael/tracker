@@ -27,6 +27,7 @@ F(4:6, 7:9) = w1 * sin(w * dt) * I;
 F(7:9, 4:6) = -w * sin(w * dt) * I;
 F(7:9, 7:9) = cos(w * dt) * I;
 
+% Jerk process noise
 processNoise = params.processNoise;
 gamma = [(1/6) * dt^3 * I
          (1/2) * dt^2 * I

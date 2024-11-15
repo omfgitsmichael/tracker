@@ -1,11 +1,11 @@
-function track = cartesianInit9State(params, track, detection)
+function track = cartesianInit3State(params, track, detection)
 % Calculate the rotation from the inertial frame to the target LOS %
 CI2T = detection.sensor.CI2D;
 azSigma = params.FOV / 6;
 elSigma = params.FOV / 6;
 
 if (detection.azValid && detection.elValid)
-    CD2T = eulerRotationMatrix('321', [detection.azimuth; detection.elevation; 0.0]); 
+    CD2T = eulerRotationMatrix('321', [detection.azimuth; detection.elevation; 0.0]);
     CI2T = CD2T * detection.sensor.CI2D;
 
     azSigma = params.sigmaAz;
@@ -26,21 +26,12 @@ track.pos = CI2T' * rTst + detection.sensor.pos;
 track.vel = [0.0; 0.0; 0.0];
 track.accel = [0.0; 0.0; 0.0];
 
-velSigma = params.maxVelocity / 6;
-accelSigma = params.maxAcceleration / 6;
-
 % Initial uncertainty from the detections are in a spherical coordinate
 % frame and need to be rotated into a cartesian coordinate frame.
 P = zeros(9);
 P(1, 1) = (rSigma / (range * range)) * (rSigma / (range * range));
 P(2, 2) = azSigma * azSigma;
 P(3, 3) = elSigma * elSigma;
-P(4, 4) = velSigma * velSigma;
-P(5, 5) = velSigma * velSigma;
-P(6, 6) = velSigma * velSigma;
-P(7, 7) = accelSigma * accelSigma;
-P(8, 8) = accelSigma * accelSigma;
-P(9, 9) = accelSigma * accelSigma;
 
 temp = diag([range * range; range; range]);
 F = CI2T' * temp;
@@ -54,4 +45,3 @@ track.t = detection.t;
 track.hitCount = 1;
 track.detection = detection;
 end
-

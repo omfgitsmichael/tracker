@@ -8,7 +8,7 @@ N = length(track.imm.models);
 flowMatrix = params.flowMatrix;
 mixingMatrix = expm(flowMatrix * dt);
 
-% weightsTemp = zeros(1, N); % Is this needed?
+weightsTemp = zeros(1, N); % Is this needed?
 modelsTemp = track.imm.models;
 
 % Loop through each of the internal models and propagate them
@@ -37,10 +37,10 @@ for i = 1:N
     % Propagate the temporary track
     propagate = str2func(params.propagate{i});
     modelsTemp(i) = propagate(params.propagateParams{i}, tempTrack, detection);
-    % weightsTemp(i) = denominator; % ???
+    weightsTemp(i) = denominator; % Not in Crassidis book, but how I've seen historically done and in papers
 end
 
-% trackOutput.imm.weights = weightsTemp; % I don't think this is correct ????
+trackOutput.imm.weights = weightsTemp; % Not in Crassidis book, but how I've seen historically done and in papers
 trackOutput.imm.models = modelsTemp;
 
 % Mix the states again to set the propagated `outer` track. Can be skipped

@@ -1,4 +1,4 @@
-function [track, chi2, likelihood] = cartesianUpdate9State(params, track, detection, distanceTest)
+function [track, chi2, likelihood] = cartesianUpdate3State(params, track, detection, distanceTest)
 % The cartesian coordinate kalman filter update function for the target
 % tracker. The track should be propagated to the time of the detection
 % prior to entering this function.
@@ -40,10 +40,8 @@ end
 
 function [track, chi2, likelihood] = cartesianUpdateCalculation(H, residual, R, track, distanceTest)
 xVec(1:3, 1) = track.pos;
-xVec(4:6, 1) = track.vel;
-xVec(7:9, 1) = track.accel;
 
-P = track.P;
+P = track.P(1:3, 1:3);
 
 S = H * P * H' + R;
 K = P * H' * S^-1;
@@ -58,12 +56,10 @@ end
 
 xVec = xVec + K * residual;
 
-I = eye(9);
-track.P = (I - K * H) * P * (I - K * H)' + K * R * K'; % Joseph formulation
+I = eye(3);
+track.P(1:3, 1:3) = (I - K * H) * P * (I - K * H)' + K * R * K'; % Joseph formulation
 
 track.pos = xVec(1:3);
-track.vel = xVec(4:6);
-track.accel = xVec(7:9);
 end
 
 function [track, chi2, likelihood] = cartesianUpdateRange(params, track, sensor, rangeMeasurement, distanceTest)
@@ -76,8 +72,6 @@ range = norm(rIst);
 %                H = -- r
 %                    dx
 H(1, 1:3) = rIst / range;
-H(1, 4:6) = 0;
-H(1, 7:9) = 0;
 
 residual = rangeMeasurement - range;
 R = params.sigmaR * params.sigmaR;
@@ -101,8 +95,6 @@ rangeRate = vIst' * uIst;
 %                H = -- rDot
 %                    dx
 H(1, 1:3) = vIst' * (eye(3) - uIst * uIst') / range;
-H(1, 4:6) = uIst';
-H(1, 7:9) = 0;
 
 residual = rangeRateMeasurement - rangeRate;
 R = params.sigmaRDot * params.sigmaRDot;
@@ -124,8 +116,6 @@ sqrtxy = sqrt(rDst(1)^2 + rDst(2)^2);
 %       H = --  arctan(---------------------------------)
 %           dx         C_11 * xi + C_12 * yi + C_13 * zi
 H(1, 1:3) = (rDst(1) * CI2D(2, :) - rDst(2) * CI2D(1, :)) / (sqrtxy * sqrtxy);
-H(1, 4:6) = 0;
-H(1, 7:9) = 0;
 
 [azimuth, ~] = los2azel(rDst);
 residual = azimuthMeasurement - azimuth;
@@ -146,12 +136,10 @@ sqrtxy = sqrt(rDst(1)^2 + rDst(2)^2);
 
 % Jacobian of the elevation measurement in the detector frame into
 % the inertial frame:
-%       d                              C_31 * xi + C_32 * yi + C_33 * zi
+%       d                                C_31 * xi + C_32 * yi + C_33 * zi
 %  H = --  arctan(----------------------------------------------------------------------------------)
 %      dx         sqrt((C_11 * xi + C_12 * yi + C_13 * zi)^2 + (C_21 * xi + C_22 * yi + C_23 * zi)^2) 
 H(1, 1:3) = (rDst(3) * uIst' - range * CI2D(3, :)) / (sqrtxy * range);
-H(1, 4:6) = 0;
-H(1, 7:9) = 0;
 
 [~, elevation] = los2azel(rDst);
 residual = elevationMeasurement - elevation;

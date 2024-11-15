@@ -3,6 +3,9 @@ function R = eulerRotationMatrix(sequence, t)
 % pitch, and yaw format as the sequences may not use roll, pitch, or yaw.
 % Referenced from Analytics of Space Systems by Hanspeter Schaub and John
 % L. Junkins, pages 759 - 760
+%
+% Direction cosine matrix is defined as: 
+% bodyFrame = C(1, 2, 3) * inertialFrame (fixedFrame)
 
 if sequence == '121'
     R = [cos(t(2)) sin(t(2))*sin(t(1)) -sin(t(2))*cos(t(1)); 

@@ -122,7 +122,7 @@ sqrtxy = sqrt(rDst(1)^2 + rDst(2)^2);
 H(1, 1:3) = (rDst(1) * CI2D(2, :) - rDst(2) * CI2D(1, :)) / (sqrtxy * sqrtxy);
 H(1, 4:6) = 0;
 
-azimuth = atan2(rDst(2), rDst(1));
+[azimuth, ~] = los2azel(rDst);
 residual = azimuthMeasurement - azimuth;
 R = params.sigmaAz * params.sigmaAz;
 
@@ -141,13 +141,13 @@ sqrtxy = sqrt(rDst(1)^2 + rDst(2)^2);
 
 % Jacobian of the elevation measurement in the detector frame into
 % the inertial frame:
-%       d                                -C_31 * xi + C_32 * yi + C_33 * zi
+%       d                                C_31 * xi + C_32 * yi + C_33 * zi
 %  H = --  arctan(----------------------------------------------------------------------------------)
 %      dx         sqrt((C_11 * xi + C_12 * yi + C_13 * zi)^2 + (C_21 * xi + C_22 * yi + C_23 * zi)^2) 
 H(1, 1:3) = (rDst(3) * uIst' - range * CI2D(3, :)) / (sqrtxy * range);
 H(1, 4:6) = 0;
 
-elevation = atan2(-rDst(3), sqrtxy); % Alternatively -sin(rDst(3) / range);
+[~, elevation] = los2azel(rDst);
 residual = elevationMeasurement - elevation;
 R = params.sigmaEl * params.sigmaEl;
 

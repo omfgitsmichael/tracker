@@ -3,18 +3,23 @@ close all;
 clear all;
 
 %% Simulation Data %%
-scenario;
+% scenario;
+% scenarioConstPosition;
+scenarioGhostTracks;
 
 % Noise %
 azSigma = 0.1 * pi / 180;
 elSigma = 0.1 * pi / 180;
 positionNoise = 0;
 
-algorithmRate = 0.1; % seconds
+algorithmRate = 1; % seconds
+
+%% For Plotting %%
+plotIMMWeights = true;
 
 %% Create the params %%
-paramsTracker = trackerCartesianConfig();
-% paramsTracker = trackerIMMConfig();
+% paramsTracker = trackerCartesianConfig();
+paramsTracker = trackerIMMConfig();
 paramsFusion = fusionConfig();
 
 for i = 1:numel(sensorPositions)
@@ -163,8 +168,39 @@ for i = 1:numel(fused1(:,1))
         rangeTruePlot(i) = norm(rangeTrue) / 1000;
         errorPlot(i) = norm(rangeEst - rangeTrue) / 1000;
         uncertainty(i) = sqrt(norm(fused1(i, 1).P(1:3,1:3))) / 1000;
+        trackVelocity(:, i) = fused1(i, 1).vel;
+
+        if (plotIMMWeights)
+            weights(:, i) =  fused1(i, 1).imm.weights';
+        end
     end
 end
+
+if (plotIMMWeights)
+    figure
+    grid on;
+    hold on;
+    plot(tVec, weights(1,:));
+    plot(tVec, weights(2,:));
+    plot(tVec, weights(3,:));
+    hold off;
+    xlabel('Time (s)')
+    ylabel('IMM Model Weights')
+    title('IMM Weights Over Time');
+    legend('Model 1 Weight', 'Model 2 Weight', 'Model 3 Weight');
+end
+
+figure
+grid on;
+hold on;
+plot(tVec, trackVelocity(1,:));
+plot(tVec, trackVelocity(2,:));
+plot(tVec, trackVelocity(3,:));
+hold off;
+xlabel('Time (s)')
+ylabel('Track Velocity')
+title('Track Velocity Over Time');
+legend('Vx', 'Vy', 'Vz');
 
 figure;
 subplot 211
